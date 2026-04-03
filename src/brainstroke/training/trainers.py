@@ -22,7 +22,8 @@ def train_model(model, model_name, task="classify"):
         criterion = nn.CrossEntropyLoss(weight=get_cls_weights(), label_smoothing=0.1)
     else:
         seg_size = IMG_CLS if isinstance(model, SwinUNet) else IMG_SEG
-        tr_ld, va_ld, te_ld, tr_s, va_s, te_s = build_loaders("segment", seg_size, True)
+        stroke_only = not isinstance(model, SwinUNet)
+        tr_ld, va_ld, te_ld, tr_s, va_s, te_s = build_loaders("segment", seg_size, True, stroke_only=stroke_only)
         criterion = BCEDiceLoss(pos_weight=10.0)
 
     model = model.to(DEVICE)
