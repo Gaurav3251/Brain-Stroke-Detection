@@ -10,47 +10,47 @@ This project detects brain stroke types from CT scans, performs lesion segmentat
 Dataset: Brain Stroke CT Dataset (Kaggle)
 - https://www.kaggle.com/datasets/ozguraslank/brain-stroke-ct-dataset
 
-The code is split into clean, reusable modules under `src/brainstroke` with CLI and UI entrypoints.
+##  Project Structure
 
-**Project structure**
-
+```
 brain-stroke-detection-project/
-?
-??? apps/
-?   ??? ui/
-?       ??? ui_app.py                  # Tkinter UI
-?
-??? artifacts/
-?   ??? checkpoints/                   # .pth checkpoints
-?   ??? logs/                          # training logs
-?   ??? outputs/                       # plots, gradcam, inference outputs
-?       ??? gradcam/
-?       ??? inference/
-?       ??? plots/
-?
-??? data/
-?   ??? Brain_Stroke_CT_Dataset/        # Dataset (from Kaggle)
-?
-??? scripts/
-?   ??? create_venv.ps1                 # venv helper (commit this)
-?   ??? infer_cli.py                    # CLI inference
-?   ??? train_classifier.py             # Train DenseNet/EfficientNet
-?   ??? train_segmentation.py           # Train U-Net/Swin-UNet
-?   ??? train_seg_guided.py             # Train seg-guided classifiers
-?   ??? train_ensemble.py               # Train ensemble fusion
-?
-??? src/
-?   ??? brainstroke/
-?       ??? analysis/                   # evaluation, visualization, explainability
-?       ??? core/                       # config, preprocessing, data, utils
-?       ??? models/                     # one model per file
-?       ??? training/                   # losses, loops, trainers
-?       ??? inference.py                # inference pipeline
-?       ??? model_io.py                 # model loading paths
-?
-??? LICENSE.txt
-??? requirements.txt
-??? README.md
+│
+├── apps/
+│   └── ui/
+│       └── ui_app.py                # Tkinter UI
+│
+├── artifacts/
+│   ├── checkpoints/                # .pth checkpoints
+│   ├── logs/                       # Training logs
+│   └── outputs/                    # Plots, Grad-CAM, inference outputs
+│       ├── gradcam/
+│       ├── inference/
+│       └── plots/
+│
+├── data/
+│   └── Brain_Stroke_CT_Dataset/    # Dataset (from Kaggle)
+│
+├── scripts/
+│   ├── create_venv.ps1             # Virtual environment helper
+│   ├── infer_cli.py                # CLI inference
+│   ├── train_classifier.py         # Train DenseNet / EfficientNet
+│   ├── train_segmentation.py       # Train U-Net / Swin-UNet
+│   ├── train_seg_guided.py         # Train segmentation-guided classifiers
+│   └── train_ensemble.py           # Train ensemble fusion
+│
+├── src/
+│   └── brainstroke/
+│       ├── analysis/               # Evaluation, visualization, explainability
+│       ├── core/                   # Config, preprocessing, data, utils
+│       ├── models/                 # Model definitions (one per file)
+│       ├── training/               # Losses, training loops, trainers
+│       ├── inference.py            # Inference pipeline
+│       └── model_io.py             # Model loading and paths
+│
+├── LICENSE.txt
+├── requirements.txt
+└── README.md
+```
 
 ## Setup (Windows / PowerShell)
 
@@ -180,5 +180,4 @@ See `LICENSE.txt`.
 ## Notes
 
 - If `timm` is not installed, Swin-UNet will be skipped automatically.
-- For DICOM decoding, `pylibjpeg-libjpeg` is required (already in `requirements.txt`).
-- The inference pipeline assumes the same model checkpoint names as the notebook.
+- For DICOM decoding, `pylibjpeg-libjpeg` is required 
