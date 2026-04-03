@@ -71,7 +71,10 @@ WC, WW = 40, 80
 PNG_ONLY = False
 
 # Segmentation
-SEG_STROKE_ONLY = False
+'''True --> default for Unet : exclude Normal images from segmentation training like for unet, 
+False --> swinunet overrides to false (using build_loaders()) : include Normal images in segmentation training like for swin-unet 
+(it does classif + segmentation)'''
+SEG_STROKE_ONLY = True
 SEG_MIN_MASK_PX = 50
 
 # Training
