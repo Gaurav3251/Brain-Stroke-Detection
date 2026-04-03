@@ -29,7 +29,11 @@ from .preprocessing import overlay_to_mask, get_train_aug_cls, get_val_aug, get_
 from .utils import load_dicom
 
 
-def collect_samples(use_overlay: bool = False) -> List[dict]:
+def collect_samples(use_overlay: bool = False, stroke_only: bool | None = None) -> List[dict]:
+    # stroke_only=None falls back to global SEG_STROKE_ONLY
+    if stroke_only is None:
+        stroke_only = SEG_STROKE_ONLY
+
     samples = []
     skipped_empty = 0
 
@@ -39,7 +43,7 @@ def collect_samples(use_overlay: bool = False) -> List[dict]:
         png_dir = os.path.join(cls_dir, "PNG")
         overlay_dir = os.path.join(cls_dir, "OVERLAY") if use_overlay else None
 
-        if use_overlay and SEG_STROKE_ONLY and cls_name == "Normal":
+        if use_overlay and stroke_only and cls_name == "Normal":
             continue
 
         for img_path in sorted(glob.glob(os.path.join(png_dir, "*.png"))):
@@ -47,14 +51,14 @@ def collect_samples(use_overlay: bool = False) -> List[dict]:
             if overlay_dir and os.path.isdir(overlay_dir):
                 cand = os.path.join(overlay_dir, os.path.basename(img_path))
                 if os.path.exists(cand):
-                    if use_overlay and SEG_STROKE_ONLY:
+                    if use_overlay and stroke_only:
                         test_mask = overlay_to_mask(cand, 128)
                         if test_mask.sum() < SEG_MIN_MASK_PX * (128 / 256) ** 2:
                             skipped_empty += 1
                             continue
                     mask_path = cand
 
-            if use_overlay and SEG_STROKE_ONLY and mask_path is None:
+            if use_overlay and stroke_only and mask_path is None:
                 continue
 
             samples.append({
@@ -150,8 +154,8 @@ def make_sampler(samples):
     return WeightedRandomSampler(weights, num_samples=len(weights), replacement=True)
 
 
-def build_loaders(task: str = "classify", img_size: int = IMG_CLS, use_overlay: bool = False):
-    all_s = collect_samples(use_overlay=use_overlay)
+def build_loaders(task: str = "classify", img_size: int = IMG_CLS, use_overlay: bool = False, stroke_only: bool | None = None):
+    all_s = collect_samples(use_overlay=use_overlay, stroke_only=stroke_only)
     tr_s, va_s, te_s = split_samples(all_s)
     print(f"[Dataset] Train:{len(tr_s)} Val:{len(va_s)} Test:{len(te_s)}")
 
