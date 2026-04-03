@@ -1,0 +1,17 @@
+torch
+torchvision
+timm
+albumentations
+pydicom
+pylibjpeg
+pylibjpeg-libjpeg
+pylibjpeg-openjpeg
+scikit-image
+seaborn
+matplotlib
+tqdm
+scikit-learn
+opencv-python
+Pillow
+numpy
+scipy

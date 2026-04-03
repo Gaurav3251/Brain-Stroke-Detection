@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+
+# Virtual env
+.venv/
+venv/
+genv/
+
+# Data and artifacts
+data/
+artifacts/
+
+# Training artifacts
+*.pth
+*.log
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Local dumps
+cells_dump.txt
+
+# OS
+.DS_Store
+Thumbs.db
