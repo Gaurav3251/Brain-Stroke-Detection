@@ -1,6 +1,6 @@
 # Brain Stroke Detection Project
 
-This repo contains a modularized version of your notebook-based pipeline for:
+This project detects brain stroke types from CT scans, performs lesion segmentation, and provides explainability outputs.
 
 - Segmentation: U-Net, Swin-UNet
 - Classification: DenseNet121, EfficientNetB4
@@ -14,19 +14,43 @@ The code is split into clean, reusable modules under `src/brainstroke` with CLI 
 
 **Project structure**
 
-- `src/brainstroke/core/`: config, preprocessing, data, utils
-- `src/brainstroke/models/`: model definitions (one model per file)
-- `src/brainstroke/training/`: losses, training loops, trainers, seg-guided and ensemble training
-- `src/brainstroke/analysis/`: evaluation, visualization, explainability, ensemble evaluation
-- `src/brainstroke/model_io.py`: model loading and checkpoint paths
-- `src/brainstroke/inference.py`: inference pipeline
-- `scripts/infer_cli.py`: CLI inference
-- `apps/ui/ui_app.py`: UI for selecting an image and running inference
-- `scripts/train_*.py`: training entrypoints
-- `artifacts/checkpoints/`: `.pth` checkpoints
-- `artifacts/logs/`: training logs
-- `artifacts/outputs/`: plots, gradcam, inference outputs
-- `data/`: dataset folder (place `Brain_Stroke_CT_Dataset` here)
+brain-stroke-detection-project/
+?
+??? apps/
+?   ??? ui/
+?       ??? ui_app.py                  # Tkinter UI
+?
+??? artifacts/
+?   ??? checkpoints/                   # .pth checkpoints
+?   ??? logs/                          # training logs
+?   ??? outputs/                       # plots, gradcam, inference outputs
+?       ??? gradcam/
+?       ??? inference/
+?       ??? plots/
+?
+??? data/
+?   ??? Brain_Stroke_CT_Dataset/        # Dataset (from Kaggle)
+?
+??? scripts/
+?   ??? create_venv.ps1                 # venv helper (commit this)
+?   ??? infer_cli.py                    # CLI inference
+?   ??? train_classifier.py             # Train DenseNet/EfficientNet
+?   ??? train_segmentation.py           # Train U-Net/Swin-UNet
+?   ??? train_seg_guided.py             # Train seg-guided classifiers
+?   ??? train_ensemble.py               # Train ensemble fusion
+?
+??? src/
+?   ??? brainstroke/
+?       ??? analysis/                   # evaluation, visualization, explainability
+?       ??? core/                       # config, preprocessing, data, utils
+?       ??? models/                     # one model per file
+?       ??? training/                   # losses, loops, trainers
+?       ??? inference.py                # inference pipeline
+?       ??? model_io.py                 # model loading paths
+?
+??? LICENSE.txt
+??? requirements.txt
+??? README.md
 
 ## Setup (Windows / PowerShell)
 
