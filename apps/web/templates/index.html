@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brain Stroke Detection</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Clinical AI Workspace</p>
+        <h1>Brain Stroke Detection</h1>
+        <p class="hero-text">
+          This project studies the CT brain image, checks for stroke-related visual patterns,
+          compares what different trained models see, and highlights areas that may need medical attention.
+        </p>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <section class="panel control-panel">
+        <div class="panel-head">
+          <div>
+            <p class="panel-kicker">Launch Pad</p>
+            <h2>Run Instant Inference</h2>
+          </div>
+          <div class="status-pill">Browser Ready</div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="upload-form">
+          <div class="control-grid">
+            <label class="field model-switch">
+              <span class="field-label">Primary Model</span>
+              <select name="model">
+                {% for value, label in model_options.items() %}
+                  <option value="{{ value }}" {% if value == selected_model %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+
+            <label class="field upload-field">
+              <span class="field-label">CT Image Input</span>
+              <input type="file" name="image" accept=".png,.jpg,.jpeg,.bmp">
+            </label>
+          </div>
+
+          <button type="submit" class="primary-btn">Analyze Scan</button>
+        </form>
+
+        {% if error %}
+          <div class="error-box">{{ error }}</div>
+        {% endif %}
+      </section>
+
+      {% if report %}
+        <section class="panel summary-panel">
+          <div class="summary-grid">
+            <div class="summary-main">
+              <p class="panel-kicker">Prediction Report</p>
+              <h2>{{ report.prediction }}</h2>
+              <p class="summary-text">{{ report.summary }}</p>
+              <a class="download-btn" href="{{ url_for('download_report', report_id=report.report_id) }}">Download PDF Report</a>
+            </div>
+            <div class="summary-stats">
+              <div class="stat-card">
+                <span>Confidence</span>
+                <strong>{{ "%.1f"|format(report.confidence * 100) }}%</strong>
+              </div>
+              <div class="stat-card">
+                <span>Review Stage</span>
+                <strong>{{ report.review_stage }}</strong>
+              </div>
+              <div class="stat-card">
+                <span>Model Used</span>
+                <strong>{{ report.selected_model }}</strong>
+              </div>
+              <div class="stat-card">
+                <span>Generated</span>
+                <strong>{{ report.generated_at }}</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel visuals-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Visual Review</p>
+              <h2>Input and Generated Outputs</h2>
+            </div>
+          </div>
+
+          <div class="visual-grid">
+            <article class="visual-card visual-card-large">
+              <h3>Uploaded Scan</h3>
+              <img src="{{ report.preview_url }}" alt="Uploaded CT image">
+            </article>
+            <article class="visual-card">
+              <h3>Classification Board</h3>
+              {% set classification_url = report_asset_url(report.assets.classification) %}
+              {% if classification_url %}
+                <img src="{{ classification_url }}" alt="Classification output">
+              {% else %}
+                <div class="empty-card">Classification image not found.</div>
+              {% endif %}
+            </article>
+            <article class="visual-card visual-card-wide">
+              <h3>Explainability View</h3>
+              {% set explainability_url = report_asset_url(report.assets.explainability) %}
+              {% if explainability_url %}
+                <img src="{{ explainability_url }}" alt="Explainability output">
+              {% else %}
+                <div class="empty-card">Explainability image not found.</div>
+              {% endif %}
+            </article>
+            <article class="visual-card">
+              <h3>Metrics Snapshot</h3>
+              {% set metrics_url = report_asset_url(report.assets.metrics) %}
+              {% if metrics_url %}
+                <img src="{{ metrics_url }}" alt="Metrics output">
+              {% else %}
+                <div class="empty-card">Metrics image not found.</div>
+              {% endif %}
+            </article>
+          </div>
+        </section>
+
+        <section class="analysis-layout">
+          <section class="panel probability-panel">
+            <div class="panel-head">
+              <div>
+                <p class="panel-kicker">Confidence Analysis</p>
+                <h2>{{ report.selected_model_key }} Probability Profile</h2>
+              </div>
+              <div class="status-pill soft">{{ report.urgency }}</div>
+            </div>
+
+            <div class="probability-list">
+              {% for item in report.probabilities %}
+                <div class="probability-item">
+                  <div class="probability-meta">
+                    <span>{{ item.label }}</span>
+                    <strong>{{ "%.1f"|format(item.value * 100) }}%</strong>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill {{ item.label|lower }}" style="width: {{ '%.2f'|format(item.value * 100) }}%"></div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <div class="confidence-dials">
+              {% for item in report.probabilities %}
+                <article class="dial-card">
+                  <div class="dial {{ item.label|lower }}" style="--value: {{ '%.2f'|format(item.value * 100) }};">
+                    <div class="dial-inner">
+                      <strong>{{ "%.0f"|format(item.value * 100) }}%</strong>
+                    </div>
+                  </div>
+                  <span>{{ item.label }}</span>
+                </article>
+              {% endfor %}
+            </div>
+          </section>
+
+          <section class="panel model-panel">
+            <div class="panel-head">
+              <div>
+                <p class="panel-kicker">Cross Model Snapshot</p>
+                <h2>Model Comparison</h2>
+              </div>
+            </div>
+
+            <div class="model-grid">
+              {% for item in report.all_models %}
+                <article class="model-card">
+                  <span class="model-name">{{ item.name }}</span>
+                  <strong>{{ item.prediction }}</strong>
+                  <span class="model-confidence">{{ "%.1f"|format(item.confidence * 100) }}% confidence</span>
+                </article>
+              {% endfor %}
+            </div>
+          </section>
+        </section>
+
+        <section class="panel precautions-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Care Guidance</p>
+              <h2>Precautions After This Report</h2>
+            </div>
+            <div class="status-pill danger">{{ report.prediction }}</div>
+          </div>
+
+          <div class="precautions-copy">
+            <p>
+              These suggestions are generated to support project interpretation and do not replace a clinician.
+              If symptoms are active, emergency care should come first.
+            </p>
+          </div>
+
+          <div class="response-strip">
+            {% for step in report.response_steps %}
+              <div class="response-card">
+                <span class="response-step">Step {{ loop.index }}</span>
+                <strong>{{ step }}</strong>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="precaution-list">
+            {% for item in report.precautions %}
+              <div class="precaution-item">
+                <span class="precaution-index">{{ loop.index }}</span>
+                <p>{{ item }}</p>
+              </div>
+            {% endfor %}
+          </div>
+        </section>
+      {% else %}
+        <section class="panel empty-state">
+          <p class="panel-kicker">Ready State</p>
+          <h2>Upload a CT image to generate the first browser report.</h2>
+          <p>
+            The web app will render the prediction summary, confidence bars, saved report images,
+            multi-model snapshot, and stroke-specific precautions here.
+          </p>
+        </section>
+      {% endif %}
+    </main>
+  </div>
+</body>
+</html>

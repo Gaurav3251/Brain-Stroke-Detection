@@ -24,6 +24,9 @@ artifacts/
 
 # Local dumps
 cells_dump.txt
+headers.txt
+response.html
+downloaded_report.pdf
 
 # OS
 .DS_Store

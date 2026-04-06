@@ -1,60 +1,65 @@
 # Brain Stroke Detection Project
 
-This project detects brain stroke types from CT scans, performs lesion segmentation, and provides explainability outputs.
+This project detects brain stroke patterns from CT scans, performs lesion-aware analysis, and generates explainability outputs for review.
 
-- Segmentation: U-Net, Swin-UNet
-- Classification: DenseNet121, EfficientNetB4
-- Hybrid ensemble: Seg-guided DenseNet + Seg-guided EfficientNet + confidence fusion
-- Explainability: GradCAM++ and segmentation-based spatial XAI
+## Overview
 
-Dataset: Brain Stroke CT Dataset (Kaggle)
+- Segmentation models: U-Net, Swin-UNet
+- Classification models: DenseNet121, EfficientNetB4
+- Hybrid ensemble: segmentation-guided DenseNet + segmentation-guided EfficientNet + confidence fusion
+- Explainability: GradCAM++ and segmentation-based visual outputs
+- Interfaces: CLI, Tkinter desktop app, and Flask web app
+
+Dataset:
+- Brain Stroke CT Dataset (Kaggle)
 - https://www.kaggle.com/datasets/ozguraslank/brain-stroke-ct-dataset
 
-##  Project Structure
+## Project Structure
 
+```text
+Brain-Stroke-Detection/
+|-- apps/
+|   |-- ui/
+|   |   `-- ui_app.py
+|   `-- web/
+|       |-- static/
+|       |   `-- styles.css
+|       |-- templates/
+|       |   `-- index.html
+|       `-- web_app.py
+|-- artifacts/
+|   |-- checkpoints/
+|   |-- logs/
+|   `-- outputs/
+|       |-- gradcam/
+|       |-- inference/
+|       `-- plots/
+|-- data/
+|   `-- Brain_Stroke_CT_Dataset/
+|-- scripts/
+|   |-- create_venv.ps1
+|   |-- infer_cli.py
+|   |-- train_classifier.py
+|   |-- train_segmentation.py
+|   |-- train_seg_guided.py
+|   `-- train_ensemble.py
+|-- src/
+|   `-- brainstroke/
+|       |-- analysis/
+|       |-- core/
+|       |-- models/
+|       |-- training/
+|       |-- inference.py
+|       |-- model_io.py
+|       `-- web_support.py
+|-- LICENSE.txt
+|-- README.md
+`-- requirements.txt
 ```
-brain-stroke-detection-project/
-│
-├── apps/
-│   └── ui/
-│       └── ui_app.py                # Tkinter UI
-│
-├── artifacts/
-│   ├── checkpoints/                # .pth checkpoints
-│   ├── logs/                       # Training logs
-│   └── outputs/                    # Plots, Grad-CAM, inference outputs
-│       ├── gradcam/
-│       ├── inference/
-│       └── plots/
-│
-├── data/
-│   └── Brain_Stroke_CT_Dataset/    # Dataset (from Kaggle)
-│
-├── scripts/
-│   ├── create_venv.ps1             # Virtual environment helper
-│   ├── infer_cli.py                # CLI inference
-│   ├── train_classifier.py         # Train DenseNet / EfficientNet
-│   ├── train_segmentation.py       # Train U-Net / Swin-UNet
-│   ├── train_seg_guided.py         # Train segmentation-guided classifiers
-│   └── train_ensemble.py           # Train ensemble fusion
-│
-├── src/
-│   └── brainstroke/
-│       ├── analysis/               # Evaluation, visualization, explainability
-│       ├── core/                   # Config, preprocessing, data, utils
-│       ├── models/                 # Model definitions (one per file)
-│       ├── training/               # Losses, training loops, trainers
-│       ├── inference.py            # Inference pipeline
-│       └── model_io.py             # Model loading and paths
-│
-├── LICENSE.txt
-├── requirements.txt
-└── README.md
-```
 
-## Setup (Windows / PowerShell)
+## Setup
 
-1. Create virtual environment:
+1. Create and activate a virtual environment:
 
 ```powershell
 python -m venv .venv
@@ -67,79 +72,93 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-3. Place dataset at:
+3. Download the dataset and place it at:
 
-```
-./data/Brain_Stroke_CT_Dataset
+```text
+data/Brain_Stroke_CT_Dataset
 ```
 
-If it is elsewhere, update the path in `src/brainstroke/core/config.py` or set an environment variable:
+4. Copy pretrained checkpoints into:
+
+```text
+artifacts/checkpoints/
+```
+
+If your dataset or checkpoints are stored elsewhere, set the paths with environment variables:
 
 ```powershell
 $env:STROKE_DATA_ROOT = "D:\path\to\Brain_Stroke_CT_Dataset"
-```
-
-4. Copy model checkpoints into `./artifacts/checkpoints/` or set:
-
-```powershell
 $env:STROKE_PRETRAINED_DIR = "D:\path\to\checkpoints"
 ```
 
-## Collaborator Setup (Quick Start)
+## Quick Start
 
-1. Clone the repo
+1. Clone the repository:
+
 ```powershell
-git clone <repo_url>
-cd "brain stroke detection project"
+git clone https://github.com/Gaurav3251/Brain-Stroke-Detection.git
+cd Brain-Stroke-Detection
 ```
 
-2. Create and activate venv
+2. Create and activate the virtual environment:
+
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-3. Install dependencies
+3. Install the project requirements:
+
 ```powershell
 pip install -r requirements.txt
 ```
 
-4. Download dataset from Kaggle and place into:
-```
-data/Brain_Stroke_CT_Dataset
-```
+4. Add the dataset and checkpoints, then run any interface below.
 
-5. Copy checkpoints into:
-```
-artifacts/checkpoints/
-```
-
-6. Run inference (see commands below)
-
-## Run Inference (CLI)
+## CLI Inference
 
 ```powershell
 python scripts\infer_cli.py --image path\to\ct.png --model ensemble
 ```
 
-Model choices:
-- `ensemble` (default)
+Available model options:
+- `ensemble`
 - `densenet121`
 - `efficientnet_b4`
 - `swin_unet`
 - `all`
 
-Outputs are saved to `artifacts/outputs/inference/`.
+Inference outputs are saved in `artifacts/outputs/inference/`.
 
-## Run Inference (UI)
+## Desktop UI
 
 ```powershell
 python apps\ui\ui_app.py
 ```
 
-Use the **Browse** button to select a CT image, choose the model, then run inference.
+Use the desktop app to browse for a CT image, select a model, and run inference locally.
 
-## Training (Optional)
+## Web UI
+
+```powershell
+python apps\web\web_app.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:5000
+```
+
+The web app supports:
+- CT image upload from the browser
+- Model selection for the primary prediction
+- Prediction confidence and per-model comparison
+- Visual classification, explainability, and metrics outputs
+- Stroke-specific precaution and response guidance
+- Downloadable PDF reports generated from the web workflow
+
+## Training
 
 ```powershell
 python scripts\train_classifier.py --model densenet121
@@ -150,19 +169,11 @@ python scripts\train_seg_guided.py
 python scripts\train_ensemble.py
 ```
 
-## Where to Update Paths
+## Configuration
 
-- Dataset path: `src/brainstroke/core/config.py` -> `DATA_ROOT`
-- Pretrained checkpoints: `src/brainstroke/core/config.py` -> `PRETRAINED_DIR`
-- Artifacts root: `src/brainstroke/core/config.py` -> `ARTIFACTS_DIR`
-- Outputs:
-  - Plots: `src/brainstroke/core/config.py` -> `PLOT_DIR`
-  - GradCAM: `src/brainstroke/core/config.py` -> `GCAM_DIR`
-  - Inference: `src/brainstroke/core/config.py` -> `INFER_DIR`
-- Logs: `src/brainstroke/core/config.py` -> `LOG_DIR`
+Primary path settings live in `src/brainstroke/core/config.py`.
 
-You can override any of the above using environment variables:
-
+Useful environment variables:
 - `STROKE_DATA_ROOT`
 - `STROKE_ARTIFACTS_DIR`
 - `STROKE_OUTPUT_DIR`
@@ -173,11 +184,11 @@ You can override any of the above using environment variables:
 - `STROKE_INFER_DIR`
 - `STROKE_PRETRAINED_DIR`
 
+## Notes
+
+- If `timm` is not installed, Swin-UNet is skipped automatically.
+- For DICOM decoding support, install `pylibjpeg-libjpeg`.
+
 ## License
 
 See `LICENSE.txt`.
-
-## Notes
-
-- If `timm` is not installed, Swin-UNet will be skipped automatically.
-- For DICOM decoding, `pylibjpeg-libjpeg` is required 

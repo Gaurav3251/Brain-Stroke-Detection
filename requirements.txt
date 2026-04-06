@@ -1,5 +1,7 @@
 torch
 torchvision
+Flask
+reportlab
 timm
 albumentations
 pydicom
