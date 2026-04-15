@@ -1,0 +1,6 @@
+{
+  "task": "classify",
+  "model": "resnet50",
+  "pretrained": true,
+  "epochs": 30
+}
