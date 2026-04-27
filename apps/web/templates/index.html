@@ -10,8 +10,8 @@
   <div class="page-shell">
     <header class="hero">
       <div class="hero-copy">
-        <p class="eyebrow">Clinical AI Workspace</p>
-        <h1>Brain Stroke Detection</h1>
+        <h1>MedStroke AI</h1>
+        <h2>Brain Stroke Detection</h2>
         <p class="hero-text">
           This project studies the CT brain image, checks for stroke-related visual patterns,
           compares what different trained models see, and highlights areas that may need medical attention.
@@ -23,10 +23,10 @@
       <section class="panel control-panel">
         <div class="panel-head">
           <div>
-            <p class="panel-kicker">Launch Pad</p>
+            <!-- <p class="panel-kicker">Launch Pad</p> -->
             <h2>Run Instant Inference</h2>
           </div>
-          <div class="status-pill">Browser Ready</div>
+          <!-- <div class="status-pill">Browser Ready</div> -->
         </div>
 
         <form method="post" enctype="multipart/form-data" class="upload-form">
@@ -93,10 +93,6 @@
           </div>
 
           <div class="visual-grid">
-            <article class="visual-card visual-card-large">
-              <h3>Uploaded Scan</h3>
-              <img src="{{ report.preview_url }}" alt="Uploaded CT image">
-            </article>
             <article class="visual-card">
               <h3>Classification Board</h3>
               {% set classification_url = report_asset_url(report.assets.classification) %}
@@ -107,12 +103,12 @@
               {% endif %}
             </article>
             <article class="visual-card visual-card-wide">
-              <h3>Explainability View</h3>
+              <h3>Input CT, Segmentation, and GradCAM</h3>
               {% set explainability_url = report_asset_url(report.assets.explainability) %}
               {% if explainability_url %}
-                <img src="{{ explainability_url }}" alt="Explainability output">
+                <img src="{{ explainability_url }}" alt="Input CT with segmentation and GradCAM output">
               {% else %}
-                <div class="empty-card">Explainability image not found.</div>
+                <div class="empty-card">Visual review image not found.</div>
               {% endif %}
             </article>
             <article class="visual-card">
@@ -221,7 +217,7 @@
         </section>
       {% else %}
         <section class="panel empty-state">
-          <p class="panel-kicker">Ready State</p>
+          <!-- <p class="panel-kicker">Ready State</p> -->
           <h2>Upload a CT image to generate the first browser report.</h2>
           <p>
             The web app will render the prediction summary, confidence bars, saved report images,

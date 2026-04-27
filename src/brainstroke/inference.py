@@ -26,8 +26,20 @@ from .models import (
 )
 from .training.seg_guided import get_seg_map_batch
 from .core.preprocessing import get_val_aug
-from .analysis.explainability import GradCAMPP, compute_damage_stats
+from .analysis.explainability import GradCAMPP, compute_model_attention_stats
 from .model_io import get_input_size, load_champions
+
+
+def _clean_mask(mask: np.ndarray, min_area: int = 120) -> np.ndarray:
+    if mask is None:
+        return mask
+    m = mask.astype(np.uint8)
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(m, connectivity=8)
+    clean = np.zeros_like(m, dtype=np.uint8)
+    for i in range(1, num_labels):
+        if stats[i, cv2.CC_STAT_AREA] >= min_area:
+            clean[labels == i] = 1
+    return clean
 
 
 def _make_seg_overlay(img, mask, color=(255, 100, 0)):
@@ -115,6 +127,10 @@ def predict_single_image(
             ens_probs = ensemble_model(tensor, seg_map)[0].cpu().numpy()
         results["Ensemble"] = ens_probs
 
+    primary_key, primary_probs = _primary_result(results, model_choice)
+    primary_pred_idx = int(np.argmax(primary_probs))
+    primary_pred_label = CLASSES[primary_pred_idx]
+
     seg_prior.eval()
     with torch.no_grad():
         seg_input_size = getattr(seg_prior, "input_size", IMG_SEG)
@@ -123,6 +139,7 @@ def predict_single_image(
         seg_prob = torch.sigmoid(get_seg_output(seg_out, seg_prior)).squeeze().cpu().numpy()
         seg_prob = cv2.resize(seg_prob, (IMG_CLS, IMG_CLS), interpolation=cv2.INTER_LINEAR)
         seg_mask = (seg_prob > threshold_unet).astype(np.uint8)
+        seg_mask = _clean_mask(seg_mask, min_area=120)
 
     swin_mask = None
     if swin_model is not None:
@@ -132,9 +149,16 @@ def predict_single_image(
             swin_prob = torch.sigmoid(get_seg_output(swin_out, swin_model)).squeeze().cpu().numpy()
             swin_prob = cv2.resize(swin_prob, (IMG_CLS, IMG_CLS), interpolation=cv2.INTER_LINEAR)
             swin_mask = (swin_prob > threshold_swin).astype(np.uint8)
+            swin_mask = _clean_mask(swin_mask, min_area=120)
 
-    _ = _make_seg_overlay(img_np, seg_mask, color=(255, 80, 0))
-    _ = _make_seg_overlay(img_np, swin_mask, color=(80, 80, 255)) if swin_mask is not None else img_np.copy()
+    # Segmentation priors were trained on stroke masks; suppress display for Normal predictions.
+    if primary_pred_label == "Normal":
+        seg_mask = np.zeros_like(seg_mask, dtype=np.uint8)
+        if swin_mask is not None:
+            swin_mask = np.zeros_like(swin_mask, dtype=np.uint8)
+
+    seg_overlay = _make_seg_overlay(img_np, seg_mask, color=(255, 80, 0))
+    swin_overlay = _make_seg_overlay(img_np, swin_mask, color=(80, 80, 255)) if swin_mask is not None else None
 
     cam_model = None
     cam_layer = None
@@ -184,11 +208,11 @@ def predict_single_image(
         gcpp = GradCAMPP(cam_model, cam_layer)
         cam, tc = gcpp.generate(tensor)
         overlay_bound = gcpp.overlay_with_boundary(cam, img_np, threshold=cam_threshold, seg_mask=seg_mask)
-        _, _, dmg_pct_cam = compute_damage_stats(cam, img_np, IMG_CLS, cam_threshold)
+        _, _, attention_pct_cam = compute_model_attention_stats(cam, img_np, IMG_CLS, cam_threshold)
     else:
         tc = int(np.argmax(_primary_result(results, model_choice)[1]))
         overlay_bound = img_np.copy()
-        dmg_pct_cam = 0.0
+        attention_pct_cam = 0.0
 
     seg_stroke_px = int(seg_mask.sum())
     total_px = seg_mask.size
@@ -238,33 +262,63 @@ def predict_single_image(
         plt.savefig(out1, dpi=150, bbox_inches="tight")
         plt.close()
 
-        pred_name = CLASSES[tc]
-        pred_color = "#DC2626" if tc > 0 else "#16A34A"
-        fig2, axes2 = plt.subplots(1, 3, figsize=(14, 4))
+        stem = os.path.splitext(os.path.basename(img_path))[0]
+        out_seg = os.path.join(out_dir, f"inference_{stem}_segmentation.png")
+        if primary_pred_label != "Normal":
+            seg_cols = 3 if swin_overlay is not None else 2
+            fig_seg, axes_seg = plt.subplots(1, seg_cols, figsize=(5 * seg_cols, 4))
+            if not isinstance(axes_seg, np.ndarray):
+                axes_seg = np.array([axes_seg])
+            fig_seg.suptitle(
+                f"Segmentation - {os.path.basename(img_path)} | Prior Coverage: {seg_coverage:.1f}%",
+                fontsize=11,
+                fontweight="bold",
+            )
+            axes_seg[0].imshow(img_np)
+            axes_seg[0].set_title("Original CT")
+            axes_seg[0].axis("off")
+            axes_seg[1].imshow(seg_overlay)
+            axes_seg[1].set_title(f"Seg Prior Overlay\nCoverage: {seg_coverage:.1f}%")
+            axes_seg[1].axis("off")
+            if swin_overlay is not None:
+                axes_seg[2].imshow(swin_overlay)
+                axes_seg[2].set_title(f"Swin Overlay\nCoverage: {swin_coverage:.1f}%")
+                axes_seg[2].axis("off")
+            plt.tight_layout(rect=[0, 0, 1, 0.88])
+            plt.savefig(out_seg, dpi=150, bbox_inches="tight")
+            plt.close()
+        elif os.path.exists(out_seg):
+            os.remove(out_seg)
+
+        if primary_pred_label != "Normal":
+            visual_panels = [
+                ("Input CT", img_np),
+                (f"Segmentation Output\nPrior Coverage: {seg_coverage:.1f}%", seg_overlay),
+                (f"GradCAM++ Output\nModel Attention: {attention_pct_cam:.1f}%", overlay_bound),
+            ]
+            fig_width = 15
+        else:
+            visual_panels = [
+                ("Input CT", img_np),
+                (f"GradCAM++ Output\nModel Attention: {attention_pct_cam:.1f}%", overlay_bound),
+            ]
+            # Keep Normal reports compact; two-panel figures otherwise render too tall in the browser.
+            fig_width = 9
+
+        fig2, axes2 = plt.subplots(1, len(visual_panels), figsize=(fig_width, 4))
+        if not isinstance(axes2, np.ndarray):
+            axes2 = np.array([axes2])
         fig2.suptitle(
-            f"Explainability - {os.path.basename(img_path)} | Primary: {pred_name} | Affected: {dmg_pct_cam:.1f}%",
-            fontsize=11,
+            f"Visual Review - {os.path.basename(img_path)} | Model Output: {primary_key} | Prediction: {primary_pred_label}",
+            fontsize=10,
             fontweight="bold",
         )
-        axes2[0].imshow(img_np)
-        axes2[0].set_title("Original CT")
-        axes2[0].axis("off")
-        axes2[1].imshow(overlay_bound)
-        axes2[1].set_title(f"GradCAM++ | {pred_name}\nAffected: {dmg_pct_cam:.1f}%")
-        axes2[1].axis("off")
-        axes2[2].axis("off")
-        axes2[2].text(0.1, 0.88, "Explainability", fontsize=11, fontweight="bold",
-                      transform=axes2[2].transAxes)
-        axes2[2].text(0.1, 0.73, pred_name, fontsize=14, color=pred_color,
-                      fontweight="bold", transform=axes2[2].transAxes)
-        axes2[2].text(0.1, 0.55, "GradCAM affected area:", fontsize=9,
-                      transform=axes2[2].transAxes)
-        axes2[2].text(0.1, 0.43, f"{dmg_pct_cam:.1f}% of brain", fontsize=11,
-                      color="#CA8A04", fontweight="bold", transform=axes2[2].transAxes)
-        axes2[2].text(0.1, 0.25, "Green boundary = highest\nattention region",
-                      fontsize=8, color="gray", transform=axes2[2].transAxes)
-        plt.tight_layout(rect=[0, 0, 1, 0.88])
-        out2 = os.path.join(out_dir, f"inference_{os.path.splitext(os.path.basename(img_path))[0]}_explainability.png")
+        for ax, (title, image) in zip(axes2, visual_panels):
+            ax.imshow(image)
+            ax.set_title(title, fontsize=10)
+            ax.axis("off")
+        plt.tight_layout(rect=[0, 0, 1, 0.86])
+        out2 = os.path.join(out_dir, f"inference_{stem}_explainability.png")
         plt.savefig(out2, dpi=150, bbox_inches="tight")
         plt.close()
 
@@ -286,7 +340,7 @@ def predict_single_image(
             (f"  Prior: {seg_coverage:.1f}%  ({seg_stroke_px:,} px)", 0.49, 10, "#EA580C", False),
             (f"  Swin:  {swin_coverage:.1f}%  ({swin_stroke_px:,} px)", 0.42, 10, "#2563EB", False),
             ("-" * 38, 0.36, 9, "#cccccc", False),
-            ("GradCAM = attention region", 0.30, 7, "gray", False),
+            ("GradCAM = model attention region", 0.30, 7, "gray", False),
             ("Seg models = lesion area", 0.24, 7, "gray", False),
         ]
         for text, y, size, color, bold in lines:

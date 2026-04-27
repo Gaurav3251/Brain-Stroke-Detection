@@ -96,6 +96,7 @@ PRECAUTIONS = {
 @dataclass
 class ReportAssets:
     classification: Optional[str]
+    segmentation: Optional[str]
     explainability: Optional[str]
     metrics: Optional[str]
 
@@ -120,11 +121,13 @@ def _build_asset_paths(image_path: str) -> ReportAssets:
     stem = os.path.splitext(os.path.basename(image_path))[0]
     assets = {
         "classification": WEB_INFER_DIR / f"inference_{stem}_classification.png",
+        "segmentation": WEB_INFER_DIR / f"inference_{stem}_segmentation.png",
         "explainability": WEB_INFER_DIR / f"inference_{stem}_explainability.png",
         "metrics": WEB_INFER_DIR / f"inference_{stem}_metrics.png",
     }
     return ReportAssets(
         classification=str(assets["classification"]) if assets["classification"].exists() else None,
+        segmentation=str(assets["segmentation"]) if assets["segmentation"].exists() else None,
         explainability=str(assets["explainability"]) if assets["explainability"].exists() else None,
         metrics=str(assets["metrics"]) if assets["metrics"].exists() else None,
     )
@@ -199,6 +202,7 @@ def save_web_report(report: dict, image_path: str) -> str:
     payload["image_path"] = str(image_path)
     payload["assets"] = {
         "classification": report["assets"].classification,
+        "segmentation": report["assets"].segmentation,
         "explainability": report["assets"].explainability,
         "metrics": report["assets"].metrics,
     }
@@ -215,6 +219,7 @@ def load_web_report(report_id: str) -> dict:
     assets = payload.get("assets", {})
     payload["assets"] = ReportAssets(
         classification=assets.get("classification"),
+        segmentation=assets.get("segmentation"),
         explainability=assets.get("explainability"),
         metrics=assets.get("metrics"),
     )
@@ -348,8 +353,17 @@ def build_report_pdf(report: dict) -> BytesIO:
     if y < 220:
         new_page()
 
+    if report["assets"].segmentation:
+        pdf.setFont("Helvetica-Bold", 12)
+        pdf.drawString(margin, y, "Segmentation Output")
+        y -= 10
+        y = _draw_image(pdf, report["assets"].segmentation, margin, y, width - (2 * margin), 220)
+
+    if y < 220:
+        new_page()
+
     pdf.setFont("Helvetica-Bold", 12)
-    pdf.drawString(margin, y, "Explainability Output")
+    pdf.drawString(margin, y, "Visual Review Output")
     y -= 10
     y = _draw_image(pdf, report["assets"].explainability, margin, y, width - (2 * margin), 220)
 

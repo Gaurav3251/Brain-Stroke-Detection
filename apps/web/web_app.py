@@ -106,7 +106,7 @@ def serve_uploaded_file(filename: str):
 
 @app.route("/reports/<path:kind>/<path:filename>")
 def serve_report_file(kind: str, filename: str):
-    if kind not in {"classification", "explainability", "metrics"}:
+    if kind not in {"classification", "segmentation", "explainability", "metrics"}:
         abort(404)
     file_path = WEB_INFER_DIR / filename
     if not file_path.exists():
@@ -137,6 +137,8 @@ def inject_helpers():
         file_name = Path(asset_path).name
         if file_name.endswith("_classification.png"):
             kind = "classification"
+        elif file_name.endswith("_segmentation.png"):
+            kind = "segmentation"
         elif file_name.endswith("_explainability.png"):
             kind = "explainability"
         else:

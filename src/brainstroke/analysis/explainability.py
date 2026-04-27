@@ -76,7 +76,7 @@ class GradCAMPP:
         return result
 
 
-def compute_damage_stats(cam, img_np, img_size, cam_threshold=0.5, min_contour_area=200):
+def compute_model_attention_stats(cam, img_np, img_size, cam_threshold=0.5, min_contour_area=200):
     cam_resized = cv2.resize(cam, (img_size, img_size))
     cam_resized = cv2.GaussianBlur(cam_resized, (21, 21), 0)
     cam_norm = (cam_resized - cam_resized.min()) / (cam_resized.max() - cam_resized.min() + 1e-8)
@@ -96,9 +96,9 @@ def compute_damage_stats(cam, img_np, img_size, cam_threshold=0.5, min_contour_a
             cv2.drawContours(clean_mask, [c], -1, 1, -1)
 
     brain_px = max(brain_mask.sum(), 1)
-    damage_px = binary_mask.sum()
-    damage_pct = (damage_px / brain_px) * 100.0
-    return binary_mask, int(damage_px), damage_pct
+    attention_px = binary_mask.sum()
+    attention_pct = (attention_px / brain_px) * 100.0
+    return binary_mask, int(attention_px), attention_pct
 
 
 def save_explanation(img_path, model, cam_layer, model_name, cam_threshold=0.5):
@@ -112,24 +112,15 @@ def save_explanation(img_path, model, cam_layer, model_name, cam_threshold=0.5):
     gcpp = GradCAMPP(model, cam_layer)
     cam, tc = gcpp.generate(tensor)
     overlay = gcpp.overlay_with_boundary(cam, img_np, threshold=cam_threshold)
-    _, _, dmg_pct = compute_damage_stats(cam, img_np, IMG_CLS, cam_threshold)
+    _, _, attention_pct = compute_model_attention_stats(cam, img_np, IMG_CLS, cam_threshold)
     pred_name = CLASSES[tc]
-    pred_color = "#DC2626" if tc > 0 else "#16A34A"
-
-    fig, axes = plt.subplots(1, 3, figsize=(14, 4))
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
     axes[0].imshow(img_np)
     axes[0].set_title("Original CT")
     axes[0].axis("off")
     axes[1].imshow(overlay)
-    axes[1].set_title(f"GradCAM++ | {pred_name}\nAffected: {dmg_pct:.1f}%")
+    axes[1].set_title(f"GradCAM++ | {pred_name}\nModel Attention Area: {attention_pct:.1f}%")
     axes[1].axis("off")
-    axes[2].axis("off")
-    axes[2].text(0.1, 0.88, "Detection Result", fontsize=11, fontweight="bold",
-                 transform=axes[2].transAxes)
-    axes[2].text(0.1, 0.73, pred_name, fontsize=14, color=pred_color, fontweight="bold",
-                 transform=axes[2].transAxes)
-    axes[2].text(0.1, 0.55, f"Affected area: {dmg_pct:.1f}%", fontsize=10,
-                 color="#CA8A04", transform=axes[2].transAxes)
     plt.tight_layout()
     os.makedirs(GCAM_DIR, exist_ok=True)
     out = os.path.join(GCAM_DIR, f"{model_name}_{os.path.splitext(os.path.basename(img_path))[0]}.png")
