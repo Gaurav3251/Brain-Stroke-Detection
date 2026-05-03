@@ -26,7 +26,8 @@ from .models import (
 )
 from .training.seg_guided import get_seg_map_batch
 from .core.preprocessing import get_val_aug
-from .analysis.explainability import GradCAMPP, compute_model_attention_stats
+# from .analysis.explainability import GradCAMPP, compute_model_attention_stats
+from .analysis.explainability import GradCAMPP
 from .model_io import get_input_size, load_champions
 
 
@@ -207,12 +208,15 @@ def predict_single_image(
         tensor = _normalize_input(img_np, size)
         gcpp = GradCAMPP(cam_model, cam_layer)
         cam, tc = gcpp.generate(tensor)
-        overlay_bound = gcpp.overlay_with_boundary(cam, img_np, threshold=cam_threshold, seg_mask=seg_mask)
-        _, _, attention_pct_cam = compute_model_attention_stats(cam, img_np, IMG_CLS, cam_threshold)
+        overlay_bound = gcpp.overlay_with_boundary(cam, img_np)
+        # overlay_bound = gcpp.overlay_with_boundary(cam, img_np, threshold=cam_threshold, seg_mask=seg_mask)
+        # _, _, attention_pct_cam = compute_model_attention_stats(cam, img_np, IMG_CLS, cam_threshold)
     else:
         tc = int(np.argmax(_primary_result(results, model_choice)[1]))
         overlay_bound = img_np.copy()
-        attention_pct_cam = 0.0
+        # tc = int(np.argmax(_primary_result(results, model_choice)[1]))
+        # overlay_bound = img_np.copy()
+        # attention_pct_cam = 0.0
 
     seg_stroke_px = int(seg_mask.sum())
     total_px = seg_mask.size
@@ -294,18 +298,20 @@ def predict_single_image(
             visual_panels = [
                 ("Input CT", img_np),
                 (f"Segmentation Output\nPrior Coverage: {seg_coverage:.1f}%", seg_overlay),
-                (f"GradCAM++ Output\nModel Attention: {attention_pct_cam:.1f}%", overlay_bound),
+                ("GradCAM++ Output", overlay_bound),
+                # (f"GradCAM++ Output\nModel Attention: {attention_pct_cam:.1f}%", overlay_bound),
             ]
             fig_width = 15
         else:
             visual_panels = [
                 ("Input CT", img_np),
-                (f"GradCAM++ Output\nModel Attention: {attention_pct_cam:.1f}%", overlay_bound),
+                ("GradCAM++ Output", overlay_bound),
+                # (f"GradCAM++ Output\nModel Attention: {attention_pct_cam:.1f}%", overlay_bound),
             ]
-            # Keep Normal reports compact; two-panel figures otherwise render too tall in the browser.
-            fig_width = 9
+            fig_width = 10  # 2 panels at same per-panel width as 3-panel stroke output (15/3 * 2)
 
         fig2, axes2 = plt.subplots(1, len(visual_panels), figsize=(fig_width, 4))
+
         if not isinstance(axes2, np.ndarray):
             axes2 = np.array([axes2])
         fig2.suptitle(
