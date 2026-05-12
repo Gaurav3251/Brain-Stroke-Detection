@@ -8,6 +8,17 @@
 </head>
 <body>
   <div class="page-shell">
+    <div class="landing-topbar">
+      <div class="landing-brand">
+        <span class="brand-mark">MS</span>
+        <div>
+          <strong>MedStroke AI</strong>
+          <p>Analyzer Workspace</p>
+        </div>
+      </div>
+      <a class="ghost-btn" href="{{ url_for('landing') }}">Back to Overview</a>
+    </div>
+
     <header class="hero">
       <div class="hero-copy">
         <h1>MedStroke AI</h1>
@@ -29,7 +40,7 @@
           <!-- <div class="status-pill">Browser Ready</div> -->
         </div>
 
-        <form method="post" enctype="multipart/form-data" class="upload-form">
+        <form method="post" action="{{ url_for('index') }}" enctype="multipart/form-data" class="upload-form">
           <div class="control-grid">
             <label class="field model-switch">
               <span class="field-label">Primary Model</span>

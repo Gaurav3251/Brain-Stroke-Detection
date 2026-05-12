@@ -63,7 +63,12 @@ def save_upload(file_storage) -> Path:
     return out_path
 
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET"])
+def landing():
+    return render_template("landing.html")
+
+
+@app.route("/app", methods=["GET", "POST"])
 def index():
     report = None
     error = None
