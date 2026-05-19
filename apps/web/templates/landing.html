@@ -3,199 +3,104 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MedStroke AI Overview</title>
+  <title>MedStroke AI</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
   <div class="page-shell landing-shell">
     <header class="landing-topbar">
-      <div class="landing-brand">
+      <a class="landing-brand brand-link" href="{{ url_for('landing') }}" aria-label="MedStroke AI home">
         <span class="brand-mark">MS</span>
-        <div>
-          <strong>MedStroke AI</strong>
-          <p>Brain Stroke Detection Suite</p>
-        </div>
-      </div>
-      <a class="ghost-btn" href="{{ url_for('index') }}">Open Analyzer</a>
+        <strong>MedStroke AI</strong>
+      </a>
+      <nav class="landing-nav" aria-label="Landing page navigation">
+        <a href="#features">Features</a>
+        <a href="#workflow">Workflow</a>
+      </nav>
     </header>
 
-    <section class="landing-hero panel">
+    <section class="landing-hero panel landing-hero-simple">
       <div class="landing-copy">
-        <p class="eyebrow">AI CT Screening Platform</p>
-        <h1>Stroke detection reports with visual evidence, model confidence, and response guidance.</h1>
+        <h1>AI-assisted stroke detection from brain CT scan images.</h1>
         <p class="hero-text">
-          MedStroke AI is a browser-based project for brain CT review. It combines classification,
-          segmentation, ensemble reasoning, and explainability outputs to help present a structured
-          technical screening result before a user enters the analyzer workspace.
+          Upload a CT scan, run the trained model pipeline, and view a clear report with prediction
+          confidence, visual evidence, and precaution suggestions based on the detected class.
         </p>
         <div class="landing-actions">
-          <a class="primary-btn" href="{{ url_for('index') }}">Try Now</a>
-          <a class="ghost-btn" href="#workflow">See How It Works</a>
+          <a class="primary-btn" href="{{ url_for('index') }}">Start Analysis</a>
         </div>
-        <div class="hero-stat-row">
-          <article class="hero-stat">
-            <span>Classification</span>
-            <strong>10 models</strong>
-          </article>
-          <article class="hero-stat">
-            <span>Segmentation</span>
-            <strong>4 priors</strong>
-          </article>
-          <article class="hero-stat">
-            <span>Outputs</span>
-            <strong>Visuals + PDF report</strong>
-          </article>
-        </div>
-      </div>
-
-      <div class="landing-showcase">
-        <article class="showcase-card showcase-primary">
-          <span class="badge-title">What The Website Delivers</span>
-          <h2>One workflow from image upload to precautions.</h2>
-          <ul class="showcase-list">
-            <li>Upload a CT image in common image formats</li>
-            <li>Choose an ensemble or a specific seg-guided model</li>
-            <li>View prediction summary and confidence profile</li>
-            <li>Inspect GradCAM and segmentation-based evidence</li>
-            <li>Read precautions and urgent response steps</li>
-            <li>Download a complete generated report</li>
-          </ul>
-        </article>
-        <article class="showcase-card">
-          <span class="badge-title">Technical Core</span>
-          <p>
-            The platform uses trained checkpoints stored in project artifacts and renders inference
-            outputs directly in the browser for fast testing and presentation.
-          </p>
-        </article>
       </div>
     </section>
 
     <main class="dashboard landing-dashboard">
+      <section class="landing-strip ensemble-strip" aria-label="Model summary">
+        <article>
+          <span>Classification</span>
+          <strong>10 Classification Models</strong>
+          <p>Classifies CT scans as Normal, Bleeding, or Ischemia.</p>
+        </article>
+        <article>
+          <span>Segmentation</span>
+          <strong>4 Segmentation Models</strong>
+          <p>Highlights possible stroke-affected regions for visual review.</p>
+        </article>
+        <article>
+          <span>Ensemble</span>
+          <strong>Confidence Weighted Ensemble Model</strong>
+          <p>Created using segmentation-guided models and confidence-based weighting.</p>
+        </article>
+      </section>
+
+      <section class="panel landing-panel" id="features">
+        <div class="panel-head compact-head">
+          <div>
+            <p class="panel-kicker">Features</p>
+            <h2>Built for clear CT scan review</h2>
+          </div>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card">
+            <h3>Model Selection</h3>
+            <p>Test CT scans with the ensemble, individual model options, or all-model comparison.</p>
+          </article>
+          <article class="feature-card">
+            <h3>Visual Evidence</h3>
+            <p>Review the input CT image together with segmentation output and GradCAM-based attention maps.</p>
+          </article>
+          <article class="feature-card">
+            <h3>Post-Report Guidance</h3>
+            <p>See confidence scores, model comparison, and practical reminders for discussion with a clinician.</p>
+          </article>
+        </div>
+      </section>
+
       <section class="panel landing-panel" id="workflow">
-        <div class="panel-head">
+        <div class="panel-head compact-head">
           <div>
             <p class="panel-kicker">How It Works</p>
-            <h2>From CT image to structured screening output</h2>
+            <h2>From CT upload to generated report</h2>
           </div>
         </div>
         <div class="workflow-grid">
           <article class="workflow-card">
             <span class="workflow-step">01</span>
-            <h3>Upload a CT Image</h3>
-            <p>The user selects a brain CT image in PNG, JPG, JPEG, or BMP format.</p>
+            <h3>Upload</h3>
+            <p>Select a CT image in PNG, JPG, JPEG, or BMP format.</p>
           </article>
           <article class="workflow-card">
             <span class="workflow-step">02</span>
-            <h3>Run Trained Models</h3>
-            <p>The system loads the selected AI model, stroke priors, and ensemble logic for inference.</p>
+            <h3>Analyze</h3>
+            <p>Choose the ensemble or a specific trained model for inference.</p>
           </article>
           <article class="workflow-card">
             <span class="workflow-step">03</span>
-            <h3>Generate Visual Evidence</h3>
-            <p>It creates classification charts, segmentation overlays, GradCAM views, and metrics panels.</p>
+            <h3>Review</h3>
+            <p>Check prediction confidence, model comparison, and visual outputs.</p>
           </article>
           <article class="workflow-card">
             <span class="workflow-step">04</span>
-            <h3>Show Precautions</h3>
-            <p>The report includes urgency guidance, response steps, and practical precautions for review.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="panel landing-panel">
-        <div class="panel-head">
-          <div>
-            <p class="panel-kicker">Website Features</p>
-            <h2>Main features inside the analyzer</h2>
-          </div>
-        </div>
-        <div class="feature-grid">
-          <article class="feature-card">
-            <h3>Prediction Summary</h3>
-            <p>Displays the likely class such as Normal, Bleeding, or Ischemia with confidence scores.</p>
-          </article>
-          <article class="feature-card">
-            <h3>Multi-Model Comparison</h3>
-            <p>Lets you compare what several trained models predict on the same CT scan.</p>
-          </article>
-          <article class="feature-card">
-            <h3>Visual Explainability</h3>
-            <p>Shows GradCAM and segmentation outputs so the result is easier to inspect visually.</p>
-          </article>
-          <article class="feature-card">
-            <h3>Precautions and Response</h3>
-            <p>Provides precaution lists and immediate response steps based on the predicted result.</p>
-          </article>
-          <article class="feature-card">
-            <h3>Downloadable Report</h3>
-            <p>Creates a report file that combines predictions, visuals, and summary guidance.</p>
-          </article>
-          <article class="feature-card">
-            <h3>Fast Browser Testing</h3>
-            <p>Runs directly in the browser so you can test the trained artifacts without a separate UI.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="panel landing-panel">
-        <div class="panel-head">
-          <div>
-            <p class="panel-kicker">Technical Highlights</p>
-            <h2>Project information at a glance</h2>
-          </div>
-        </div>
-        <div class="tech-grid">
-          <article class="stat-card">
-            <span>Classification Models</span>
-            <strong>10 Architectures</strong>
-          </article>
-          <article class="stat-card">
-            <span>Segmentation Models</span>
-            <strong>4 Priors</strong>
-          </article>
-          <article class="stat-card">
-            <span>Web Output</span>
-            <strong>Visuals + Metrics + Report</strong>
-          </article>
-          <article class="stat-card">
-            <span>Support Logic</span>
-            <strong>Precautions and urgent response guidance</strong>
-          </article>
-        </div>
-      </section>
-
-      <section class="panel landing-panel">
-        <div class="panel-head">
-          <div>
-            <p class="panel-kicker">Outputs You Will See</p>
-            <h2>The analyzer presents more than a single label</h2>
-          </div>
-        </div>
-        <div class="feature-grid">
-          <article class="feature-card">
-            <h3>Classification Board</h3>
-            <p>Probability charts make the predicted class easier to compare and explain.</p>
-          </article>
-          <article class="feature-card">
-            <h3>Segmentation View</h3>
-            <p>Stroke-prior overlays help visualize the region the model focuses on for lesion-aware review.</p>
-          </article>
-          <article class="feature-card">
-            <h3>GradCAM Evidence</h3>
-            <p>Attention maps highlight areas contributing to the prediction for explainability support.</p>
-          </article>
-          <article class="feature-card">
-            <h3>Model Comparison</h3>
-            <p>Cross-model outputs show where multiple models agree or differ on the same scan.</p>
-          </article>
-          <article class="feature-card">
-            <h3>Precaution Notes</h3>
-            <p>Each generated result is paired with response steps and basic safety-oriented guidance.</p>
-          </article>
-          <article class="feature-card">
-            <h3>Downloadable Report</h3>
-            <p>All key findings can be bundled into a downloadable project report from the browser.</p>
+            <h3>Export</h3>
+            <p>Download the generated PDF report for documentation.</p>
           </article>
         </div>
       </section>
@@ -203,23 +108,12 @@
       <section class="panel landing-panel safety-panel">
         <div>
           <p class="panel-kicker">Important Note</p>
-          <h2>This website is a technical screening interface, not a medical diagnosis.</h2>
+          <h2>For academic demonstration and decision support, not standalone diagnosis.</h2>
         </div>
         <p class="hero-text">
-          The project is designed to present AI model outputs, visual evidence, and precaution guidance.
-          If stroke symptoms are active, emergency medical care should always come first.
+          The website presents AI model outputs and precaution guidance for interpretation. If stroke
+          symptoms are present, immediate medical evaluation should always come first.
         </p>
-      </section>
-
-      <section class="panel landing-panel landing-cta">
-        <div>
-          <p class="panel-kicker">Ready To Test</p>
-          <h2>Open the analyzer and test your website workflow</h2>
-          <p class="hero-text">
-            Start the main website to upload a scan, choose the inference model, and review the generated report.
-          </p>
-        </div>
-        <a class="download-btn" href="{{ url_for('index') }}">Try Now</a>
       </section>
     </main>
   </div>

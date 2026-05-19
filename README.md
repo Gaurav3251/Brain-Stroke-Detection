@@ -10,9 +10,13 @@ This project detects brain stroke patterns from CT scans, performs lesion-aware 
 - Explainability: GradCAM++ for CNNs, segmentation masks for SwinUNet, highest-weight model for ensemble
 - Interfaces: CLI, Tkinter desktop app, and Flask web app
 
+## Demo Video
+
+Watch a quick demo here: https://youtu.be/cVKE-djvNhM
+
 Dataset:
 - Brain Stroke CT Dataset (Kaggle)
-- https://www.kaggle.com/datasets/ozguraslank/brain-stroke-ct-dataset
+- https://www.kaggle.com/datasets/gauravdt035/brain-stroke-dataset
 
 ## Project Structure
 

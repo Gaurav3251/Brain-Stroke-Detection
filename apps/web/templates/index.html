@@ -9,35 +9,21 @@
 <body>
   <div class="page-shell">
     <div class="landing-topbar">
-      <div class="landing-brand">
+      <a class="landing-brand brand-link" href="{{ url_for('landing') }}" aria-label="Go to MedStroke AI landing page">
         <span class="brand-mark">MS</span>
-        <div>
-          <strong>MedStroke AI</strong>
-          <p>Analyzer Workspace</p>
-        </div>
-      </div>
-      <a class="ghost-btn" href="{{ url_for('landing') }}">Back to Overview</a>
+        <strong>MedStroke AI</strong>
+      </a>
     </div>
-
-    <header class="hero">
-      <div class="hero-copy">
-        <h1>MedStroke AI</h1>
-        <h2>Brain Stroke Detection</h2>
-        <p class="hero-text">
-          This project studies the CT brain image, checks for stroke-related visual patterns,
-          compares what different trained models see, and highlights areas that may need medical attention.
-        </p>
-      </div>
-    </header>
 
     <main class="dashboard">
       <section class="panel control-panel">
         <div class="panel-head">
           <div>
-            <!-- <p class="panel-kicker">Launch Pad</p> -->
             <h2>Run Instant Inference</h2>
+            <p class="panel-subtext">
+              Choose from Ensemble, individual model options, or All Models from the dropdown, then upload a CT scan for analysis.
+            </p>
           </div>
-          <!-- <div class="status-pill">Browser Ready</div> -->
         </div>
 
         <form method="post" action="{{ url_for('index') }}" enctype="multipart/form-data" class="upload-form">
@@ -54,11 +40,30 @@
             <label class="field upload-field">
               <span class="field-label">CT Image Input</span>
               <input type="file" name="image" accept=".png,.jpg,.jpeg,.bmp">
+              <span class="field-help">Supported formats: PNG, JPG, JPEG, and BMP.</span>
             </label>
           </div>
 
           <button type="submit" class="primary-btn">Analyze Scan</button>
         </form>
+
+        <div class="model-options-head">
+          <p class="panel-kicker">Model Choices Available</p>
+        </div>
+        <div class="model-option-grid" aria-label="Available model testing options">
+          <article>
+            <strong>Ensemble</strong>
+            <span>Runs the confidence-weighted ensemble model.</span>
+          </article>
+          <article>
+            <strong>Individual Model</strong>
+            <span>Test one available model such as DenseNet, ResNet, Xception, MobileNet, or ConvNeXt.</span>
+          </article>
+          <article>
+            <strong>All Models</strong>
+            <span>Generate a comparison snapshot across loaded model outputs.</span>
+          </article>
+        </div>
 
         {% if error %}
           <div class="error-box">{{ error }}</div>
@@ -196,22 +201,22 @@
           <div class="panel-head">
             <div>
               <p class="panel-kicker">Care Guidance</p>
-              <h2>Precautions After This Report</h2>
+              <h2>Post-Report Guidance</h2>
             </div>
             <div class="status-pill danger">{{ report.prediction }}</div>
           </div>
 
           <div class="precautions-copy">
             <p>
-              These suggestions are generated to support project interpretation and do not replace a clinician.
-              If symptoms are active, emergency care should come first.
+              These points are general post-report reminders for discussion with a medical professional.
+              They are not a diagnosis or treatment plan. If symptoms are active or worsening, urgent clinical care should take priority.
             </p>
           </div>
 
           <div class="response-strip">
             {% for step in report.response_steps %}
               <div class="response-card">
-                <span class="response-step">Step {{ loop.index }}</span>
+                <span class="response-step">Reminder {{ loop.index }}</span>
                 <strong>{{ step }}</strong>
               </div>
             {% endfor %}
@@ -228,11 +233,10 @@
         </section>
       {% else %}
         <section class="panel empty-state">
-          <!-- <p class="panel-kicker">Ready State</p> -->
           <h2>Upload a CT image to generate the first browser report.</h2>
           <p>
             The web app will render the prediction summary, confidence bars, saved report images,
-            multi-model snapshot, and stroke-specific precautions here.
+            multi-model snapshot, and post-report guidance here.
           </p>
         </section>
       {% endif %}

@@ -45,52 +45,53 @@ PRECAUTIONS = {
         "headline": "The scan looks closer to a normal pattern in this model review.",
         "urgency": "Low immediate alert from this model output.",
         "actions": [
-            "Keep regular blood pressure, blood sugar, cholesterol, and diabetes follow-up checks.",
-            "Continue healthy routines like enough sleep, hydration, walking, and avoiding smoking.",
-            "If symptoms like facial droop, arm weakness, sudden confusion, or speech trouble appear, seek emergency care even if this result looks normal.",
-            "Use this result as a screening aid only and confirm with a clinician if symptoms or risk factors are present.",
+            "Keep regular follow-up for blood pressure, blood sugar, cholesterol, diabetes, or other stroke risk factors if already advised.",
+            "Continue healthy routines such as proper sleep, hydration, walking, and avoiding smoking.",
+            "If new symptoms such as facial droop, arm weakness, sudden confusion, severe headache, or speech trouble appear, seek urgent medical care even if this output is normal.",
+            "Use this result as supportive information only and review it with a clinician if symptoms, risk factors, or concerns are present.",
         ],
         "response_steps": [
-            "Keep observing symptoms and general health.",
-            "Maintain routine neurological or physician follow-up if already advised.",
-            "Act immediately if any sudden stroke warning signs begin.",
+            "Review the result with a doctor if the CT scan was requested for symptoms or clinical concern.",
+            "Continue routine follow-up if already advised by a healthcare professional.",
+            "Treat any sudden stroke warning signs as urgent, regardless of the model output.",
         ],
     },
     "Ischemia": {
-        "headline": "Possible ischemic stroke pattern detected.",
-        "urgency": "High priority. Fast medical evaluation matters.",
+        "headline": "The model output suggests an ischemia-like stroke pattern.",
+        "urgency": "High-priority clinical review suggested.",
         "actions": [
-            "Seek emergency medical care immediately, especially if symptoms started recently.",
-            "Note the last known normal time because treatment decisions depend on timing.",
-            "Do not drive yourself if symptoms are active; use emergency support if available.",
-            "Keep a list of current medicines, especially blood thinners, ready for clinicians.",
-            "Keep the patient resting safely with the head supported while waiting for medical help.",
-            "Do not give food, water, or oral medicines if swallowing is difficult or the person is drowsy.",
+            "Share this CT result and model report with the treating doctor or stroke team as soon as possible.",
+            "If symptoms are active, recent, or worsening, emergency medical care should take priority.",
+            "Keep the last known normal time ready, because clinical decisions often depend on symptom timing.",
+            "Avoid driving yourself if symptoms are present; use emergency or assisted transport when needed.",
+            "Keep a list of current medicines, especially blood thinners, ready for the clinical team.",
+            "Avoid food, water, or oral medicines if swallowing is difficult or the person is very drowsy, until assessed by medical staff.",
         ],
         "response_steps": [
-            "Call emergency support without delay.",
-            "Track symptom start time and important medical history.",
-            "Get urgent hospital imaging and stroke-team evaluation.",
+            "Discuss the model output with the treating doctor or clinical team urgently.",
+            "Keep symptom start time and important medical history available.",
+            "Follow the evaluation and next steps given by the hospital or stroke team.",
         ],
     },
     "Bleeding": {
-        "headline": "Possible bleeding-related stroke pattern detected.",
-        "urgency": "Critical priority. This needs urgent hospital evaluation.",
+        "headline": "The model output suggests a bleeding-like stroke pattern.",
+        "urgency": "Critical clinical review suggested.",
         "actions": [
-            "Go to emergency care immediately and avoid delaying for home observation.",
-            "Avoid taking aspirin or similar medicines unless a clinician specifically advises it.",
-            "Monitor for worsening headache, vomiting, confusion, weakness, or reduced alertness.",
-            "Keep the patient resting safely and arrange urgent transport to a hospital.",
-            "If the person becomes less responsive, has seizures, or breathing changes, treat it as an extreme emergency.",
-            "Do not allow strenuous movement or unnecessary walking while waiting for urgent care.",
+            "Share this result with the treating doctor or emergency clinical team immediately.",
+            "If symptoms are active or worsening, urgent hospital evaluation should not be delayed.",
+            "Avoid aspirin, blood-thinning medicines, or self-medication unless a clinician specifically advises it.",
+            "Watch for worsening headache, vomiting, confusion, weakness, reduced alertness, seizures, or breathing changes and report them quickly.",
+            "Keep the person resting safely and avoid unnecessary movement while arranging clinical review or transport.",
+            "Keep current medicine details and any previous scan/report information ready for the medical team.",
         ],
         "response_steps": [
-            "Move to emergency care immediately.",
-            "Avoid self-medication unless prescribed by a clinician.",
-            "Watch closely for rapid worsening while transport is arranged.",
+            "Escalate the result to the treating doctor or emergency clinical team.",
+            "Avoid self-medication unless prescribed or approved by a clinician.",
+            "Monitor closely for rapid worsening while clinical review or transport is arranged.",
         ],
     },
 }
+
 
 
 @dataclass
@@ -316,7 +317,7 @@ def build_report_pdf(report: dict) -> BytesIO:
     y -= 12
 
     pdf.setFont("Helvetica-Bold", 14)
-    pdf.drawString(margin, y, "Immediate Response Steps")
+    pdf.drawString(margin, y, "Review Reminders")
     y -= 18
     pdf.setFont("Helvetica", 11)
     for index, step in enumerate(report["response_steps"], 1):
@@ -325,7 +326,7 @@ def build_report_pdf(report: dict) -> BytesIO:
     y -= 10
 
     pdf.setFont("Helvetica-Bold", 14)
-    pdf.drawString(margin, y, "Precautions")
+    pdf.drawString(margin, y, "Post-Report Guidance")
     y -= 18
     pdf.setFont("Helvetica", 11)
     for index, item in enumerate(report["precautions"], 1):
@@ -349,15 +350,6 @@ def build_report_pdf(report: dict) -> BytesIO:
     pdf.drawString(margin, y, "Classification Output")
     y -= 10
     y = _draw_image(pdf, report["assets"].classification, margin, y, width - (2 * margin), 180)
-
-    if y < 220:
-        new_page()
-
-    if report["assets"].segmentation:
-        pdf.setFont("Helvetica-Bold", 12)
-        pdf.drawString(margin, y, "Segmentation Output")
-        y -= 10
-        y = _draw_image(pdf, report["assets"].segmentation, margin, y, width - (2 * margin), 220)
 
     if y < 220:
         new_page()
