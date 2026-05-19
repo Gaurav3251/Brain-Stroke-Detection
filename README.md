@@ -12,7 +12,7 @@ This project detects brain stroke patterns from CT scans, performs lesion-aware 
 
 ## Demo Video
 
-Watch a quick demo here: https://youtu.be/cVKE-djvNhM
+[![Watch the demo](https://img.youtube.com/vi/cVKE-djvNhM/0.jpg)](https://youtu.be/cVKE-djvNhM)
 
 Dataset:
 - Brain Stroke CT Dataset (Kaggle)
